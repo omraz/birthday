@@ -1,3 +1,9 @@
+/*
+ * 0.0.4    30Jan21     ameded "list all" and "list next"
+ * 
+ * 
+ */
+
 import java.io.File;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
@@ -57,8 +63,63 @@ public class birthday {
             return (NodeList) expr.evaluate(doc, XPathConstants.NODESET);
         } catch (XPathExpressionException e) {
             e.printStackTrace();
-            return (NodeList) null;
+            return null;
         }
+    }
+    
+    public static void listNext()   {
+
+        SimpleDateFormat formatter = new SimpleDateFormat("d.M");
+        Calendar calendar = Calendar.getInstance();
+
+        do  {
+            String date = formatter.format(calendar.getTime());
+            NodeList nl = getBirthday(date);
+            if (nl != null && nl.getLength() > 0) {
+                for (int j = 0; j < nl.getLength(); j++) {
+                    Element birthday = (Element) nl.item(j).getChildNodes();
+                    NodeList birthdate = birthday.getElementsByTagName("date");
+                    NodeList name = birthday.getElementsByTagName("name");
+                    NodeList year = birthday.getElementsByTagName("year");
+                    if (year.getLength() > 0) {
+						System.out.printf("%5s.%s\t%-20s%n", birthdate.item(0).getTextContent(), year.item(0).getTextContent(), name.item(0).getTextContent());
+                    } else {
+						System.out.printf("%5s\t%-20s%n", birthdate.item(0).getTextContent(), name.item(0).getTextContent());
+                    }
+                }
+                break;
+            }
+            calendar.add(Calendar.DAY_OF_MONTH, 1);
+        }   while(true);
+    }
+
+    public static void listAll()    {
+
+        SimpleDateFormat formatter = new SimpleDateFormat("d.M");
+        Calendar calendar = Calendar.getInstance();
+        int thisYear = calendar.get(Calendar.YEAR);
+        calendar.set(thisYear, 0, 1, 0, 0);
+        Calendar finish = (Calendar)calendar.clone();
+        finish.set(thisYear, 11, 31, 0, 0);
+
+        do  {
+            String date = formatter.format(calendar.getTime());
+            NodeList nl = getBirthday(date);
+            if (nl != null && nl.getLength() > 0) {
+                for (int j = 0; j < nl.getLength(); j++) {
+                    Element birthday = (Element) nl.item(j).getChildNodes();
+                    NodeList birthdate = birthday.getElementsByTagName("date");
+                    NodeList name = birthday.getElementsByTagName("name");
+                    NodeList year = birthday.getElementsByTagName("year");
+                    if (year.getLength() > 0) {
+						System.out.printf("%5s.%s\t%-20s%n", birthdate.item(0).getTextContent(), year.item(0).getTextContent(), name.item(0).getTextContent());
+                    } else {
+						System.out.printf("%5s\t%-20s%n", birthdate.item(0).getTextContent(), name.item(0).getTextContent());
+                    }
+                }
+            }
+            calendar.add(Calendar.DAY_OF_MONTH, 1);
+        }   while(calendar.compareTo(finish) <= 0);
     }
 
     public static void list() {
@@ -69,7 +130,7 @@ public class birthday {
         for (int i = 0; i < list; i++) {
             String date = formatter.format(calendar.getTime());
             NodeList nl = getBirthday(date);
-            if (nl.getLength() > 0) {
+            if (nl != null && nl.getLength() > 0) {
                 for (int j = 0; j < nl.getLength(); j++) {
                     Element birthday = (Element) nl.item(j).getChildNodes();
                     NodeList birthdate = birthday.getElementsByTagName("date");
@@ -77,14 +138,14 @@ public class birthday {
                     NodeList year = birthday.getElementsByTagName("year");
                     if (year.getLength() > 0) {
                         int age = calendar.get(Calendar.YEAR) - Integer.parseInt(year.item(0).getTextContent());
-						System.out.printf("%5s\t%-20s (%d)\n", birthdate.item(0).getTextContent(), name.item(0).getTextContent(), age);
+                        System.out.printf("%5s\t%-20s (%d)%n", birthdate.item(0).getTextContent(), name.item(0).getTextContent(), age);
                     } else {
-						System.out.printf("%5s\t%-20s\n", birthdate.item(0).getTextContent(), name.item(0).getTextContent());
+                        System.out.printf("%5s\t%-20s%n", birthdate.item(0).getTextContent(), name.item(0).getTextContent());
                     }
                 }
             }
             else    {
-				System.out.printf("%5s\n", date);
+                System.out.printf("%5s%n", date);
             }
 
             calendar.add(Calendar.DAY_OF_MONTH, 1);
@@ -167,12 +228,11 @@ public class birthday {
     public static void help()   {
         System.out.println("Usage:");
         System.out.println("birthday <birthday-file.xml> [ action ]");
-        System.out.println("\t<birthday-file.xml>\tmandatory");
         System.out.println("action:");
-        System.out.println("\tlist\t[ number-of-days ]\tlist 20 is default action");
-        System.out.println("\tadd\tname date [ year ]\tDate format is d.m");
-        System.out.println("\tdel\tname date  \t\tdelete, remove are synonyms, Date format is d.m");
-        System.out.println("\thelp\t\t\t\tthis help");
+        System.out.println("\tlist [ number-of-days | all | next ]\tlist 20 is default action");
+        System.out.println("\tadd name date [ year ]\tDate format is d.m");
+        System.out.println("\tdel name date  \t\tdelete, remove are synonyms, Date format is d.m");
+        System.out.println("\thelp\t\t\tthis help");
     }
 
 
@@ -180,7 +240,7 @@ public class birthday {
 
         String action = "list";
 
-        System.out.println("birtday version 0.0.3\t(c) 2019 OM");
+        System.out.println("birtday version 0.0.4\t(c) 2021 OM");
 
         if (args.length > 0)    {
             birthdayXML = args[0];
@@ -196,9 +256,26 @@ public class birthday {
 
         switch (action.toLowerCase())   {
             case "list":
-                if (args.length > 2)
-                    list = Integer.parseInt(args[2]);
-                list();
+                if (args.length > 2)    {
+                    try {
+                        list = Integer.parseInt(args[2]);
+                        list();
+                    }   catch (NumberFormatException ex)    {
+                        switch (args[2].toLowerCase())  {
+                            case "next":
+                                listNext();
+                                break;
+                            case "all":
+                                listAll();
+                                break;
+                            default:
+                                help();
+                        }
+                    }
+                }
+                else {
+                    list();
+                }
                 break;
             case "add":
                 if (args.length > 4)    {
