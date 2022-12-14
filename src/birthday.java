@@ -70,6 +70,7 @@ public class birthday {
     public static void listNext()   {
 
         SimpleDateFormat formatter = new SimpleDateFormat("d.M");
+        SimpleDateFormat datefmt = new SimpleDateFormat("E dd.MM");
         Calendar calendar = Calendar.getInstance();
 
         do  {
@@ -82,9 +83,13 @@ public class birthday {
                     NodeList name = birthday.getElementsByTagName("name");
                     NodeList year = birthday.getElementsByTagName("year");
                     if (year.getLength() > 0) {
-						System.out.printf("%5s.%s\t%-20s%n", birthdate.item(0).getTextContent(), year.item(0).getTextContent(), name.item(0).getTextContent());
+                        int age = calendar.get(Calendar.YEAR) - Integer.parseInt(year.item(0).getTextContent());
+						//System.out.printf("%5s.%s\t%-20s%n", birthdate.item(0).getTextContent(), year.item(0).getTextContent(), name.item(0).getTextContent());
+                        System.out.printf("%9s\t%-20s (%d)%n", datefmt.format(calendar.getTime()), name.item(0).getTextContent(), age);
                     } else {
-						System.out.printf("%5s\t%-20s%n", birthdate.item(0).getTextContent(), name.item(0).getTextContent());
+						//System.out.printf("%5s\t%-20s%n", birthdate.item(0).getTextContent(), name.item(0).getTextContent());
+                        System.out.printf("%9s\t%-20s%n", datefmt.format(calendar.getTime()), name.item(0).getTextContent());
+
                     }
                 }
                 break;
@@ -126,7 +131,10 @@ public class birthday {
 
         Calendar calendar = Calendar.getInstance();
         SimpleDateFormat formatter = new SimpleDateFormat("d.M");
-
+        SimpleDateFormat datefmt = new SimpleDateFormat("E dd.MM");
+        
+        System.out.println("list next " + list + " days");
+        
         for (int i = 0; i < list; i++) {
             String date = formatter.format(calendar.getTime());
             NodeList nl = getBirthday(date);
@@ -138,14 +146,16 @@ public class birthday {
                     NodeList year = birthday.getElementsByTagName("year");
                     if (year.getLength() > 0) {
                         int age = calendar.get(Calendar.YEAR) - Integer.parseInt(year.item(0).getTextContent());
-                        System.out.printf("%5s\t%-20s (%d)%n", birthdate.item(0).getTextContent(), name.item(0).getTextContent(), age);
+                        //System.out.printf("%5s\t%-20s (%d)%n", birthdate.item(0).getTextContent(), name.item(0).getTextContent(), age);
+                        System.out.printf("%9s\t%-20s (%d)%n", datefmt.format(calendar.getTime()), name.item(0).getTextContent(), age);
                     } else {
-                        System.out.printf("%5s\t%-20s%n", birthdate.item(0).getTextContent(), name.item(0).getTextContent());
+                        //System.out.printf("%5s\t%-20s%n", birthdate.item(0).getTextContent(), name.item(0).getTextContent());
+                        System.out.printf("%9s\t%-20s%n", datefmt.format(calendar.getTime()), name.item(0).getTextContent());
                     }
                 }
             }
             else    {
-                System.out.printf("%5s%n", date);
+                System.out.printf("%9s%n", datefmt.format(calendar.getTime()));
             }
 
             calendar.add(Calendar.DAY_OF_MONTH, 1);
@@ -240,7 +250,7 @@ public class birthday {
 
         String action = "list";
 
-        System.out.println("birtday version 0.0.4\t(c) 2021 OM");
+        System.out.println("birtday version 0.0.5\t(c) 14Dec2022 OM");
 
         if (args.length > 0)    {
             birthdayXML = args[0];
